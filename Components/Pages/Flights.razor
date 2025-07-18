@@ -1,0 +1,236 @@
+﻿@* //Ashley Shaw-Strand
+//Group 4
+//July 16,2025
+//The Traveless App is designed to help users search flights, make reservations, and manage existing reservations. Users can input origin, destination, and day to find available flights. 
+The users can then select a flight to reserve after inputting their name and citizenship. 
+The system generates a unique reservation code and saves details once a reservation is made.
+Users can search for their existing reservation details by inputting either their reservation code, airline, or name.
+This application uses SQLite database and local data files to store data. *@
+
+
+@page "/flights"
+@using TravelApplication.Resources.Data
+<h3>Flight Finder</h3>
+
+
+<div class="flight-finder">
+<label for="From">From:</label>
+<input type="text" id="From" name="From" placeholder="Any" @bind="From" />
+
+<label for="To">To:</label>
+<input type="text" id="To" name="To" placeholder="Any" @bind="To"/>
+
+
+<label for="Day">Day:</label>
+<input type="text" id="Day" name="Day" placeholder="Any" @bind="Day"/>
+
+<button class="btn btn-primary" @onclick="FindFlights">Find Flights</button>
+</div>
+
+<h3>Flights</h3>
+
+<div class="flights">
+    @if (foundFlights == null)
+    {
+        <input type="text" placeholder="Loading.." readonly />
+    }
+    else if (foundFlights.Count == 0)
+    {
+        <input type="text" placeholder="No flights found." readonly />
+    }
+    else
+    {
+        <select @onchange="OnFlightSelected">
+            <option value="">Select a flight...</option>
+            @for (int i = 0; i < foundFlights.Count; i++)
+            {
+                <option value="@i">
+                    @foundFlights[i].Flightcode , @foundFlights[i].Airline, @foundFlights[i].Originairportcode , @foundFlights[i].Destinationairportcode, @foundFlights[i].Dayofweek, @foundFlights[i].Departuretime, @foundFlights[i].Cost.ToString("C")
+                </option>
+            }
+        </select>
+    }
+</div>
+
+
+<h3>Reserve</h3>
+
+<div class="reserve">
+<label for="Flight Code">Flight Code:</label>
+    <input type="text" id="FlightCode" name="FlightCode" placeholder="Flight" @bind="SelectedFlightCode" readonly/>
+
+<label for="Airline">Airline:</label>
+    <input type="text" id="Airline" name="Airline" placeholder="Airline" @bind="SelectedAirline" readonly/>
+
+<label for="Day">Day:</label>
+    <input type="text" id="Day" name="Day" placeholder="Day" @bind="SelectedDay" readonly/>
+
+<label for="Time">Time:</label>
+    <input type="text" id="Time" name="Time" placeholder="Time" @bind="SelectedTime" readonly/>
+
+<label for="Cost">Cost:</label>
+    <input type="text" id="Cost" name="Cost" placeholder="0" @bind="SelectedCost" readonly/>
+
+<label for="Name">Name:</label>
+    <input type="text" id="Name" name="Name" placeholder="Name" @bind="SelectedName" />
+
+<label for="Citizenship">Citizenship:</label>
+    <input type="text" id="Citizenship" name="Citizenship" placeholder="Citizenship" @bind="SelectedCitizenship" />
+</div>
+
+<div class="reserve-actions">
+<button class="btn btn-primary" @onclick="ReserveFlight">Reserve</button>
+
+<label for="Reservation Code">Reservation Code:</label>
+    <input type="text" id="ReservationCode" name="ReservationCode" placeholder="" value="@ReservationCode" readonly />
+</div>
+
+
+
+<style>
+    .flight-finder, .flights, .reserve {
+        display: flex;
+        flex-direction: row;
+        align-content: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+
+    .reserve-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        margin-top: 10px;
+    }
+
+    label {
+        font-weight: bold;
+        margin-right: 10px;
+    }
+
+    input {
+        padding: 8px;
+        width: 200px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        font-size: 14px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 150px;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+    h3 {
+        color: #007bff;
+        margin-top: 20px;
+    }
+
+    .flight-finder > div, .reserve > div {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .flights input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+</style>
+
+@code {
+    private string From = "";
+    private string To = "";
+    private string Day = "";
+    private List<TravelApplication.Resources.Data.Flights> foundFlights = new();
+    private ReservationManager reservationManager;
+
+    private string SelectedFlightCode = "";
+    private string SelectedAirline = "";
+    private string SelectedDay = "";
+    private string SelectedTime = "";
+    private string SelectedCost = "";
+    private string SelectedName = "";
+    private string SelectedCitizenship = "";
+
+
+    protected override void OnInitialized()
+    {
+        // Replace with your actual database path
+        reservationManager = new ReservationManager("dbase path");
+    }
+
+    private void FindFlights()
+    {
+        foundFlights = reservationManager.FindFlights(From, To, Day);
+        ClearSelectedFlight();
+    }
+
+    private void OnFlightSelected(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int idx) && idx >= 0 && idx < foundFlights.Count)
+        {
+            var flight = foundFlights[idx];
+            SelectedFlightCode = flight.Flightcode;
+            SelectedAirline = flight.Airline;
+            SelectedDay = flight.Dayofweek;
+            SelectedTime = flight.Departuretime;
+            SelectedCost = flight.Cost.ToString("C");
+        }
+        else
+        {
+            ClearSelectedFlight();
+        }
+    }
+
+    private void ClearSelectedFlight()
+    {
+        SelectedFlightCode = "";
+        SelectedAirline = "";
+        SelectedDay = "";
+        SelectedTime = "";
+        SelectedCost = "";
+    }
+
+    private string ReservationCode = "";
+    private async void ReserveFlight()
+    {
+        var flight = foundFlights.FirstOrDefault(f => f.Flightcode == SelectedFlightCode);
+        if (flight == null || string.IsNullOrWhiteSpace(SelectedName) || string.IsNullOrWhiteSpace(SelectedCitizenship))
+        {
+            ReservationCode = "Invalid input";
+            StateHasChanged();
+            return;
+        }
+
+        try
+        {
+            var reservation = await Task.Run(() => reservationManager.MakeReservation(flight, SelectedName, SelectedCitizenship));
+            ReservationCode = reservation?.Reservationcode ?? "Reservation failed";
+        }
+        catch (Exception ex)
+        {
+            ReservationCode = ex.Message;
+        }
+        StateHasChanged();
+    }
+}
