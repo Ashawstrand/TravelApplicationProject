@@ -29,6 +29,7 @@ This application uses SQLite database and local data files to store data. *@
 
 <h3>Reservations</h3>
 
+@* Placeholder input changed based on exception  *@
 <div class="reservations">
     @if (foundReservations == null)
     {
@@ -88,7 +89,7 @@ This application uses SQLite database and local data files to store data. *@
 
 
 
-
+@* Styling for reservations page  *@
 <style>
     .reservation-finder, .reservations{
         display: flex;
@@ -192,7 +193,7 @@ This application uses SQLite database and local data files to store data. *@
     private string SelectedName = "";
     private string SelectedStatus = "";
 
-    // Only one OnInitialized method!
+    // OnInitialized method
     protected override void OnInitialized()
     {
         reservationManager = new ReservationManager("dbase path");
@@ -200,6 +201,7 @@ This application uses SQLite database and local data files to store data. *@
         allFlights = reservationManager.GetAllFlights();
     }
 
+    // Method to find reservations based on search criteria
     private async void FindReservations()
     {
         var all = await reservationManager.LoadReservations();
@@ -214,6 +216,7 @@ This application uses SQLite database and local data files to store data. *@
         StateHasChanged();
     }
 
+    // Event handler for reservation selection
     private void OnReservationSelected(ChangeEventArgs e)
     {
         if (int.TryParse(e.Value?.ToString(), out int idx) && idx >= 0 && idx < foundReservations.Count)
@@ -245,6 +248,7 @@ This application uses SQLite database and local data files to store data. *@
         }
     }
 
+    // Method to clear selected reservation details
     private void ClearSelectedReservation()
     {
         SelectedReservationCode = "";
