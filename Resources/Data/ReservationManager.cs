@@ -19,6 +19,7 @@ namespace TravelApplication.Resources.Data
 {
     public class ReservationManager
     {
+        //Lists for flights, reservations, and airport
         private List<Flights> flights = new List<Flights>();
         private List<Reservations> reservations = new List<Reservations>();
         private List<Airport> airports = new List<Airport>();
@@ -27,16 +28,17 @@ namespace TravelApplication.Resources.Data
 
         public ReservationManager(string dbPath)
         {
-            //create connection and table
+            //Constructor to initialize the database connection and create the Reservations table
             database = new SQLiteAsyncConnection(dbPath);
             database.CreateTableAsync<Reservations>().Wait();
 
+            //load flights, reservations, and airports
             LoadFlights();
             LoadReservations().Wait();
             LoadAirports();
         }
 
-        //Load flights from flights.csv file
+        //Load flights method extracting from flights.csv file
         private void LoadFlights()
         {
             var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "Data", "flights.csv");
