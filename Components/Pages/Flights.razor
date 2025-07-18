@@ -29,6 +29,7 @@ This application uses SQLite database and local data files to store data. *@
 
 <h3>Flights</h3>
 
+@* Placeholder input changed based on exception  *@
 <div class="flights">
     @if (foundFlights == null)
     {
@@ -86,7 +87,7 @@ This application uses SQLite database and local data files to store data. *@
 </div>
 
 
-
+@* Styling for flights page  *@
 <style>
     .flight-finder, .flights, .reserve {
         display: flex;
@@ -157,6 +158,7 @@ This application uses SQLite database and local data files to store data. *@
     }
 </style>
 
+@* Logic for the page functioning  *@
 @code {
     private string From = "";
     private string To = "";
@@ -172,19 +174,20 @@ This application uses SQLite database and local data files to store data. *@
     private string SelectedName = "";
     private string SelectedCitizenship = "";
 
-
+    // Initialize the ReservationManager with the database path
     protected override void OnInitialized()
     {
-        // Replace with your actual database path
         reservationManager = new ReservationManager("dbase path");
     }
 
+    // Properties for binding flight search inputs
     private void FindFlights()
     {
         foundFlights = reservationManager.FindFlights(From, To, Day);
         ClearSelectedFlight();
     }
 
+    // Event handler for flight selection
     private void OnFlightSelected(ChangeEventArgs e)
     {
         if (int.TryParse(e.Value?.ToString(), out int idx) && idx >= 0 && idx < foundFlights.Count)
@@ -202,6 +205,7 @@ This application uses SQLite database and local data files to store data. *@
         }
     }
 
+    // Clear selected flight details
     private void ClearSelectedFlight()
     {
         SelectedFlightCode = "";
@@ -211,9 +215,11 @@ This application uses SQLite database and local data files to store data. *@
         SelectedCost = "";
     }
 
+    // Properties for reservation details
     private string ReservationCode = "";
     private async void ReserveFlight()
     {
+        // Validate inputs before making a reservation
         var flight = foundFlights.FirstOrDefault(f => f.Flightcode == SelectedFlightCode);
         if (flight == null || string.IsNullOrWhiteSpace(SelectedName) || string.IsNullOrWhiteSpace(SelectedCitizenship))
         {
